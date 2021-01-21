@@ -1,0 +1,116 @@
+*   *   *   *   *   *   *   *   *   *   *   *   *   *   *
+*   Tietorakenteet ja algoritmit 2020-2021		*
+*   Sanalaskuri-harjoitustyö				*
+*							*
+*   Toni Torvela					*
+*   							*
+*   *   *   *   *   *   *   *   *   *   *   *   *   *   *
+= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+0. HOW TO USE |
+- - - - - - - -
+Käynnistä ohjelma joko .exe tiedostosta tai komentoriviltä.
+Komentoriviltä käynnistettäessä voit antaa parametreiksi
+korkeintaan kolme argumenttia: tiedostopolku, tulostettavien
+sanojen määrä ja järjestys('+'=nouseva / '-'=laskeva).
+
+Esimerkiksi komento
+
+   WordCounter.exe examples/small.txt 100 -
+
+avaa main.exe (ohjelman nimi) ohjelman, etsii tiedostoa
+small.txt files-kansiosta ja tulostaa 100 sanaa laskevassa
+järjestyksessä eli eniten käytetyistä vähiten käytettyihin.
+
+= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+1. RATKAISU |
+- - - - - - -
+Ohjelma lukee joko komentoriville annetuista argumenteista
+tai ohjelman sisällä annettavat syötteet tiedostopolun, sekä
+tulostettavien sanojen määrän ja järjestyksen.
+
+Ohjelma avaa annetun tiedostopolun tiedoston ja lukee siinä
+esiintyvät sanat. Sanat muotoillaan siten, että ne sisältävät
+vain kirjaimia a-z/A-Z tai heittomerkkejä. Sen jälkeen kaikki
+kirjaimet muutetaan isoiksi kirjaimiksi ja tallennetaan hash-
+taulukkoon käyttäen djb2-hashing -algoritmia. Jos sana on 
+tallennettu aikaisemmin taulukkoon, kyseisen sanan lukumäärä-
+laskuria kasvatetaan yhdellä.
+
+Hash-taulukon koko on vakio eli 100000 paikkaa.
+
+Mahdollisten törmäysten varalta ohjelma käyttää luotaamista 
+(probing). Jos hashyksen jälkeen kyseinen paikka hash-taulukossa
+on varattu toiselle sanalle, etsitään järjestyksessä ko.
+indeksistä aloittaen ensimmäinen vapaa paikka, johon sana 
+voidaan tallentaa.
+
+Kun kaikki sanat on saatu laskettua, ohjelma käy läpi koko
+hash-taulukon ja lisää kaksiulotteiseen taulukkoon laskurin
+lukumäärän ja kyseisen sanan hash-taulukko indexin. Näin ollen
+kaksiulotteinen taulukko sisältää kaikkien sanojen lukumäärän
+ja sanaa vastaavan hash-taulukko indexin.
+
+Tämän jälkeen ohjelma käyttää mukautettua quicksort -lajittelu-
+algoritmia järjestäen kaksiulotteisen taulukon nousevaan
+järjestykseen sanalukumäärien perusteella vaihtaen sekä luku-
+määrien, että hash-taulukkoindeksien indeksejä kaksiulotteisessa
+taulukossa.
+
+Lajittelun päätyttyä ohjelma lukee taulukkoa joko sen alusta tai
+lopusta (riippuu missä järjestyksessä käyttäjä halusi sanat listata)
+ja tulostaa 100 eniten tai vähiten käytettyä sanaa.
+
+Kaksiulotteinen taulukko siis sisältää hash-taulukon indeksit, 
+josta kyseinen sana (ja lukumäärä) löytyy.
+
+Lopuksi ohjelma näyttää ajan, kuinka kauan sanojen tallentaminen,
+laskeminen ja järjestäminen vei aikaa sekunneissa ja kuinka monta
+sanaa sekunnissa voidaan prosessoida sen perusteella.
+
+= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+2. KÄYTETYT TIETORAKENTEET  |
+- - - - - - - - - - - - - - -
+Ohjelma käyttää periaatteessa vain kahta tietorakennetta: 
+* hash-taulukkoa
+  -> tallennetaan sana ja sen esiintymiskerrat
+
+* kaksiulotteinen taulukko
+  -> tallennetaan sanan lukumäärä/hash-taulukko indeksi parit
+
+= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+3. OHJELMAN SUORITUSKYKY ANALYYSI |
+- - - - - - - - - - - - - - - - - -
+Tiedostonimi	Sanojen lkm	Suoritusajat(ms)		KA(s)
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+small.txt	2587		40/36/37/31/39			0.0366
+TheGun.txt	7539		44/47/64/51/49			0.051
+Species.txt	208504		251/228/223/224/225		0.2302
+Ulysses.txt	261980		1162/1175/1164/1171/1670	1.2684
+WarPeace.txt	556045		584/584/624/574/583		0.5898
+
+Jokainen tiedosto ajettiin ohjelman läpi viidesti ja ne tuottivat
+ylläolevan tuloksen. Kolmen ensimmäisen tiedoston kohdalla ei ole mitään
+ihmeellistä, mutta verrattaessa Ulysses.txt ja WarPeace.txt tiedostojen
+suoritusaikaa, voidaan huomata että vaikka Ulysses sisältää alle puolet
+WarPeacen sanamäärästä, sen prosessointi aika on kuitenkin n. tuplasti
+pidempi.
+
+Tämä johtuu varmaankin törmäysten määrästä hash-taulukossa, jota selkeästi
+tapahtuu aika useasti Ulysses.txt tiedostoa ajettaessa algoritmin etsiessä
+aina seuraavaa vapaata paikkaa hash-taulusta.
+
+Laskettaessa kaikkien tiedostojen sanat ja niiden keskiarvosuoritusajat,
+voidaan todeta, että ohjelma kykenee käsittelemään n. 476403 sanaa sekunnissa.
+
+Tämän perusteella voidaan laskea, että ohjelma pystyy käsittelemään
+15 sekunnissa noin 7,15 miljoonan sanan tiedoston.
+
+Jos 15 sekunnissa voidaan käsitellä n. 7,15 miljoonaa sanaa ja englannin
+kielessä keskimääräinen sanapituus on 5.1 merkkiä, saadaan tästä
+36 444 902 merkkiä.
+
+C-kielessä perus unicode on UTF-8, jolloin yksi merkki(char) vie 1 tavun.
+Näin ollen, ohjelma pystyy käsittelemään 15 sekunnissa n. 36,4 megatavun
+tiedostoja.
+
+= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
